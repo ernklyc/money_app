@@ -187,15 +187,15 @@ async function showChart(currencyCode) {
             datasets: [{
                 label: `${currencyCode}/TRY`,
                 data: data.values,
-                borderColor: '#3B82F6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderColor: '#27F583',
+                backgroundColor: 'rgba(39, 245, 131, 0.1)',
                 borderWidth: 2,
-                tension: 0.1,
+                tension: 0.3,
                 fill: true,
                 pointRadius: 0,
-                pointHoverRadius: 4,
-                pointBackgroundColor: '#3B82F6',
-                pointBorderColor: '#fff',
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#27F583',
+                pointBorderColor: '#1A0B2E',
                 pointHoverBorderWidth: 2
             }]
         },
@@ -209,19 +209,19 @@ async function showChart(currencyCode) {
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: 'rgba(17, 25, 40, 0.9)',
+                    backgroundColor: 'rgba(26, 11, 46, 0.95)',
                     titleFont: {
                         size: 12,
                         weight: 'normal',
                         family: "'Poppins', sans-serif"
                     },
                     bodyFont: {
-                        size: 13,
+                        size: 14,
                         weight: 'bold',
                         family: "'Poppins', sans-serif"
                     },
-                    padding: 12,
-                    cornerRadius: 8,
+                    padding: 15,
+                    cornerRadius: 12,
                     displayColors: false,
                     callbacks: {
                         label: function(context) {
@@ -233,39 +233,39 @@ async function showChart(currencyCode) {
             scales: {
                 y: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.05)',
+                        color: 'rgba(39, 245, 131, 0.05)',
                         drawBorder: false
                     },
                     border: {
                         display: false
                     },
                     ticks: {
-                        color: 'rgba(255, 255, 255, 0.5)',
+                        color: 'rgba(255, 255, 255, 0.6)',
                         font: {
-                            size: 11,
+                            size: 12,
                             family: "'Poppins', sans-serif"
                         },
-                        padding: 8,
+                        padding: 10,
                         maxTicksLimit: 6
                     }
                 },
                 x: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.05)',
+                        color: 'rgba(39, 245, 131, 0.05)',
                         drawBorder: false
                     },
                     border: {
                         display: false
                     },
                     ticks: {
-                        color: 'rgba(255, 255, 255, 0.5)',
+                        color: 'rgba(255, 255, 255, 0.6)',
                         font: {
-                            size: 11,
+                            size: 12,
                             family: "'Poppins', sans-serif"
                         },
                         maxRotation: 0,
                         maxTicksLimit: 8,
-                        padding: 8
+                        padding: 10
                     }
                 }
             },

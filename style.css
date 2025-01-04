@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #0B1120 0%, #111827 100%);
+    background: #1A0B2E;
     min-height: 100vh;
     color: #fff;
     overflow-x: hidden;
@@ -20,7 +20,7 @@ body {
 
 h1 {
     text-align: left;
-    font-size: 1.8em;
+    font-size: 2.5em;
     margin-bottom: 30px;
     color: #fff;
     font-weight: 600;
@@ -35,9 +35,9 @@ h1 {
 }
 
 .rate-card {
-    background: rgba(17, 25, 40, 0.8);
-    border-radius: 12px;
-    padding: 20px;
+    background: rgba(26, 11, 46, 0.8);
+    border-radius: 20px;
+    padding: 25px;
     position: relative;
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -46,12 +46,12 @@ h1 {
 
 .rate-card:hover {
     transform: translateY(-5px);
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+    border-color: rgba(39, 245, 131, 0.5);
+    box-shadow: 0 8px 20px rgba(39, 245, 131, 0.15);
 }
 
 .currency {
-    font-size: 1.2em;
+    font-size: 1.4em;
     font-weight: 600;
     color: #fff;
     display: flex;
@@ -62,14 +62,14 @@ h1 {
 
 .currency-name {
     color: rgba(255, 255, 255, 0.6);
-    font-size: 0.85em;
+    font-size: 0.9em;
     font-weight: 500;
 }
 
 .rate-value {
-    font-size: 1.8em;
+    font-size: 2.2em;
     font-weight: 700;
-    color: #fff;
+    color: #27F583;
     margin: 15px 0;
     display: flex;
     align-items: center;
@@ -79,38 +79,38 @@ h1 {
 .rate-value::after {
     content: '₺';
     font-size: 0.6em;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(39, 245, 131, 0.6);
     margin-left: 5px;
 }
 
 .percentage-change {
-    font-size: 0.9em;
+    font-size: 1em;
     font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 8px 16px;
+    border-radius: 12px;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 
 .positive-change {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10B981;
+    background: rgba(39, 245, 131, 0.1);
+    color: #27F583;
 }
 
 .negative-change {
-    background: rgba(239, 68, 68, 0.1);
-    color: #EF4444;
+    background: rgba(245, 39, 39, 0.1);
+    color: #F52727;
 }
 
 .update-time {
     text-align: right;
     color: rgba(255, 255, 255, 0.5);
-    font-size: 0.8em;
+    font-size: 0.9em;
     margin-top: 20px;
-    padding: 15px;
-    background: rgba(17, 25, 40, 0.6);
-    border-radius: 8px;
+    padding: 20px;
+    background: rgba(26, 11, 46, 0.6);
+    border-radius: 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -123,82 +123,82 @@ h1 {
     top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(26, 11, 46, 0.95);
     backdrop-filter: blur(10px);
 }
 
 .modal-content {
-    background: #0B1120;
+    background: #1A0B2E;
     margin: 2vh auto;
-    padding: 25px;
+    padding: 30px;
     width: 95%;
     max-width: 1400px;
     height: 96vh;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: 25px;
+    border: 1px solid rgba(39, 245, 131, 0.1);
+    box-shadow: 0 8px 32px rgba(39, 245, 131, 0.1);
 }
 
 .chart-container {
-    background: rgba(17, 25, 40, 0.6);
-    border-radius: 12px;
-    padding: 20px;
+    background: rgba(26, 11, 46, 0.8);
+    border-radius: 20px;
+    padding: 25px;
     height: calc(96vh - 180px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(39, 245, 131, 0.1);
 }
 
 #chartTitle {
-    font-size: 1.4em;
+    font-size: 1.6em;
     color: #fff;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     font-weight: 600;
 }
 
 .time-range-buttons {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     margin: 20px 0;
-    background: rgba(17, 25, 40, 0.6);
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(26, 11, 46, 0.8);
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid rgba(39, 245, 131, 0.1);
 }
 
 .time-btn {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(39, 245, 131, 0.1);
     color: rgba(255, 255, 255, 0.6);
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 10px 20px;
+    border-radius: 12px;
     cursor: pointer;
     font-family: 'Poppins', sans-serif;
-    font-size: 0.9em;
+    font-size: 0.95em;
     font-weight: 500;
     transition: all 0.2s ease;
 }
 
 .time-btn:hover {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(39, 245, 131, 0.1);
+    border-color: rgba(39, 245, 131, 0.5);
     color: #fff;
 }
 
 .time-btn.active {
-    background: #3B82F6;
-    color: #fff;
-    border-color: #3B82F6;
+    background: #27F583;
+    color: #1A0B2E;
+    border-color: #27F583;
 }
 
 .close {
     position: absolute;
-    right: 25px;
-    top: 20px;
+    right: 30px;
+    top: 25px;
     color: rgba(255, 255, 255, 0.6);
-    font-size: 24px;
+    font-size: 28px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .close:hover {
-    color: #fff;
+    color: #27F583;
 } 
