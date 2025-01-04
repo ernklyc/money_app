@@ -666,6 +666,19 @@ const CITIES = [
     "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
 ];
 
+// Türkçe karakterleri normalize et
+function normalizeText(text) {
+    return text.toLowerCase()
+        .replace(/ı/g, 'i')
+        .replace(/i̇/g, 'i')
+        .replace(/İ/g, 'i')
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c');
+}
+
 // Şehir seçici için event listener'ları ekle
 document.addEventListener('DOMContentLoaded', function() {
     const cityButton = document.getElementById('cityButton');
@@ -676,9 +689,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Şehir listesini oluştur
     function populateCityList(filter = '') {
         cityList.innerHTML = '';
+        const normalizedFilter = normalizeText(filter);
+        
+        // Filtrelenmiş şehirleri al ve ilk 4'ünü göster
         CITIES.filter(city => 
-            city.toLowerCase().includes(filter.toLowerCase())
-        ).forEach(city => {
+            normalizeText(city).includes(normalizedFilter)
+        )
+        .slice(0, 4) // Sadece ilk 4 şehri al
+        .forEach(city => {
             const div = document.createElement('div');
             div.className = 'city-item';
             div.textContent = city;
