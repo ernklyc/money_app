@@ -108,6 +108,20 @@ h1 {
     border: 1px solid #333;
 }
 
+.percentage-change {
+    font-size: 0.9em;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+.positive-change {
+    color: #4CAF50;
+}
+
+.negative-change {
+    color: #f44336;
+}
+
 /* Animasyonlar */
 @keyframes pulse {
     0% { transform: scale(1); opacity: 1; }
