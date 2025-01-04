@@ -295,6 +295,16 @@ function calculatePercentageChange(currentRate, previousRate) {
 
 function displayRates(rates, prevRates) {
     const ratesContainer = document.getElementById('ratesContainer');
+    const oldInputValues = {};
+    
+    // Mevcut input değerlerini kaydet
+    document.querySelectorAll('.calc-input').forEach(input => {
+        const currencyCode = input.getAttribute('data-currency');
+        if (input.value) {
+            oldInputValues[currencyCode] = input.value;
+        }
+    });
+    
     ratesContainer.innerHTML = '';
     
     rates.forEach((rate, index) => {
@@ -314,6 +324,10 @@ function displayRates(rates, prevRates) {
         const changeClass = percentageChange > 0 ? 'positive-change' : percentageChange < 0 ? 'negative-change' : '';
         const changeSymbol = percentageChange > 0 ? '▲' : percentageChange < 0 ? '▼' : '';
         
+        // Eski input değerini al
+        const oldValue = oldInputValues[rate.code] || '';
+        const oldResult = oldValue ? `${oldValue} ${rate.code} = ${(oldValue * rate.rate).toFixed(2)} ₺` : '';
+        
         rateCard.innerHTML = `
             <div class="currency">${rate.code}</div>
             <div class="currency-name">${rate.name}</div>
@@ -321,9 +335,30 @@ function displayRates(rates, prevRates) {
             <div class="percentage-change ${changeClass}">
                 ${changeSymbol} ${Math.abs(percentageChange).toFixed(4)}%
             </div>
+            <div class="calculator">
+                <input type="number" class="calc-input" placeholder="Miktar girin" 
+                    onkeyup="calculateExchange(this, ${rate.rate}, '${rate.code}')"
+                    onclick="event.stopPropagation()"
+                    data-currency="${rate.code}"
+                    value="${oldValue}">
+                <div class="calc-result" style="opacity: ${oldValue ? '1' : '0'}">${oldResult}</div>
+            </div>
         `;
         ratesContainer.appendChild(rateCard);
     });
+}
+
+function calculateExchange(input, rate, code) {
+    const value = input.value;
+    const resultDiv = input.parentElement.querySelector('.calc-result');
+    
+    if (value && value > 0) {
+        const result = (value * rate).toFixed(2);
+        resultDiv.textContent = `${value} ${code} = ${result} ₺`;
+        resultDiv.style.opacity = '1';
+    } else {
+        resultDiv.style.opacity = '0';
+    }
 }
 
 function updateLastUpdateTime() {

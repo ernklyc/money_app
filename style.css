@@ -22,9 +22,25 @@ h1 {
     text-align: left;
     font-size: 2.5em;
     margin-bottom: 30px;
-    color: #fff;
-    font-weight: 600;
+    color: #27F583;
+    font-weight: 700;
     opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 10px;
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60%;
+    height: 3px;
+    background: linear-gradient(90deg, #27F583, transparent);
+    border-radius: 2px;
 }
 
 .rates-container {
@@ -201,4 +217,40 @@ h1 {
 
 .close:hover {
     color: #27F583;
+}
+
+.calculator {
+    margin-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 15px;
+}
+
+.calc-input {
+    width: 100%;
+    background: rgba(39, 245, 131, 0.05);
+    border: 1px solid rgba(39, 245, 131, 0.2);
+    padding: 10px 15px;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+.calc-input:focus {
+    outline: none;
+    border-color: rgba(39, 245, 131, 0.5);
+    background: rgba(39, 245, 131, 0.1);
+}
+
+.calc-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.calc-result {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #27F583;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 } 
