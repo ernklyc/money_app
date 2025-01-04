@@ -1,0 +1,155 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #0f0f0f;
+    min-height: 100vh;
+    padding: 20px;
+    color: #fff;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 40px;
+    color: #ff3366;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    animation: glow 2s ease-in-out infinite;
+}
+
+.rates-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.rate-card {
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #333;
+}
+
+.rate-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: #ff3366;
+    box-shadow: 0 0 20px rgba(255, 51, 102, 0.2);
+}
+
+.rate-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 51, 102, 0.1),
+        transparent
+    );
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+
+.currency {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.currency-name {
+    color: #888;
+    font-size: 0.8em;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.rate-value {
+    font-size: 1.8em;
+    font-weight: 600;
+    color: #00ff9d;
+    text-align: center;
+    margin: 10px 0;
+    text-shadow: 0 0 15px rgba(0, 255, 157, 0.4);
+    animation: pulse 2s infinite;
+}
+
+.update-time {
+    text-align: center;
+    color: #666;
+    font-size: 0.8em;
+    margin-top: 30px;
+    padding: 10px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid #333;
+}
+
+/* Animasyonlar */
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shine {
+    0% { transform: translateX(-200%) rotate(45deg); }
+    100% { transform: translateX(200%) rotate(45deg); }
+}
+
+@keyframes glow {
+    0% { text-shadow: 0 0 10px rgba(255, 51, 102, 0.5); }
+    50% { text-shadow: 0 0 20px rgba(255, 51, 102, 0.8), 0 0 30px rgba(255, 51, 102, 0.5); }
+    100% { text-shadow: 0 0 10px rgba(255, 51, 102, 0.5); }
+}
+
+/* Hover efektleri */
+.rate-card:hover .rate-value {
+    animation: none;
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+.rate-card:hover .currency {
+    color: #ff3366;
+    transition: color 0.3s ease;
+}
+
+/* Responsive tasarım */
+@media (max-width: 768px) {
+    .rates-container {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .rate-value {
+        font-size: 1.5em;
+    }
+
+    .currency {
+        font-size: 1.2em;
+    }
+} 
