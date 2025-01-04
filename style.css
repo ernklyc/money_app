@@ -177,46 +177,55 @@ h1 {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
+    background-color: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(8px);
 }
 
 .modal-content {
     background: #1a1a1a;
-    margin: 5% auto;
-    padding: 25px;
+    margin: 2vh auto;
+    padding: 30px;
     width: 90%;
-    max-width: 800px;
-    border-radius: 16px;
+    max-width: 1400px;
+    height: 96vh;
+    border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
-    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .chart-container {
-    position: relative;
-    height: 400px;
+    width: 100%;
+    height: calc(96vh - 200px);
     margin-top: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 20px;
 }
 
 .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
+    position: absolute;
+    right: 25px;
+    top: 15px;
+    color: #fff;
+    font-size: 32px;
     font-weight: bold;
     cursor: pointer;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+    z-index: 1;
 }
 
 .close:hover {
-    color: #fff;
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 #chartTitle {
     color: #fff;
-    font-size: 1.5em;
-    margin-bottom: 20px;
+    font-size: 2em;
+    margin: 10px 0 30px 0;
     text-align: center;
+    font-weight: 600;
 }
 
 .rate-card {
@@ -227,42 +236,63 @@ h1 {
 @media (max-width: 768px) {
     .modal-content {
         width: 95%;
-        margin: 10% auto;
+        height: 90vh;
+        padding: 20px;
+        margin: 5vh auto;
     }
 
     .chart-container {
-        height: 300px;
+        height: calc(90vh - 180px);
+        padding: 10px;
+    }
+
+    .time-btn {
+        padding: 10px 20px;
+        min-width: 100px;
+        font-size: 0.9em;
+    }
+
+    #chartTitle {
+        font-size: 1.5em;
+        margin: 10px 0 20px 0;
     }
 }
 
 .time-range-buttons {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
     margin: 20px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
     flex-wrap: wrap;
 }
 
 .time-btn {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.1);
     color: #fff;
-    padding: 8px 16px;
-    border-radius: 8px;
+    padding: 12px 24px;
+    border-radius: 12px;
     cursor: pointer;
     font-family: 'Poppins', sans-serif;
-    font-size: 0.9em;
+    font-size: 1em;
     font-weight: 500;
     transition: all 0.3s ease;
+    min-width: 120px;
+    text-align: center;
 }
 
 .time-btn:hover {
     background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: #00ff9d;
+    transform: translateY(-2px);
 }
 
 .time-btn.active {
     background: #00ff9d;
     color: #000;
     border-color: #00ff9d;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
 } 

@@ -189,9 +189,14 @@ async function showChart(currencyCode) {
                 data: data.values,
                 borderColor: '#00ff9d',
                 backgroundColor: 'rgba(0, 255, 157, 0.1)',
-                borderWidth: 2,
+                borderWidth: 3,
                 tension: 0.4,
-                fill: true
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#00ff9d',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
             }]
         },
         options: {
@@ -200,33 +205,67 @@ async function showChart(currencyCode) {
             plugins: {
                 legend: {
                     labels: {
-                        color: '#fff'
+                        color: '#fff',
+                        font: {
+                            size: 14,
+                            family: "'Poppins', sans-serif"
+                        }
                     }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: {
+                        size: 14,
+                        family: "'Poppins', sans-serif"
+                    },
+                    bodyFont: {
+                        size: 13,
+                        family: "'Poppins', sans-serif"
+                    },
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: false
                 }
             },
             scales: {
                 y: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false
                     },
                     ticks: {
-                        color: '#fff'
+                        color: '#fff',
+                        font: {
+                            size: 12,
+                            family: "'Poppins', sans-serif"
+                        },
+                        padding: 8
                     }
                 },
                 x: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false
                     },
                     ticks: {
                         color: '#fff',
+                        font: {
+                            size: 12,
+                            family: "'Poppins', sans-serif"
+                        },
                         maxRotation: 45,
-                        minRotation: 45
+                        minRotation: 45,
+                        padding: 8
                     }
                 }
             },
             interaction: {
                 intersect: false,
                 mode: 'index'
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
             }
         }
     });
