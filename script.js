@@ -5,6 +5,7 @@ let updateInterval = null;
 let rateHistory = {};
 let chart = null;
 let currentCurrency = null;
+let currentCrypto = null;
 
 // Para birimleri ve sembolleri
 const CURRENCIES = {
@@ -48,11 +49,12 @@ const timeButtons = document.querySelectorAll('.time-btn');
 
 // Zaman aralığı butonları için olay dinleyicileri
 timeButtons.forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
         timeButtons.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
-        if (currentCurrency) {
-            updateChartData(currentCurrency, button.dataset.range);
+        if (currentCrypto) {
+            const data = await fetchCryptoHistory(currentCrypto, button.dataset.range);
+            updateCryptoChart(data);
         }
     });
 });
@@ -809,56 +811,330 @@ function updateWeatherUI(data) {
     weatherInfo.style.display = 'flex';
 }
 
-// Haber fonksiyonları
-async function fetchNews() {
+async function fetchCryptoData() {
     try {
-        const response = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.aa.com.tr/tr/rss/default?cat=economy');
-        const data = await response.json();
+        const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
         
-        if (data.status === 'ok') {
-            displayNews(data.items);
-        } else {
-            console.error('Haberler alınamadı');
+        if (!response.ok) {
+            throw new Error('Veri servisi yanıt vermiyor');
         }
+        
+        const data = await response.json();
+        const cryptoCards = [];
+        
+        const cryptoInfo = {
+            'BTCUSDT': { name: 'Bitcoin', symbol: 'BTC', id: 'bitcoin' },
+            'ETHUSDT': { name: 'Ethereum', symbol: 'ETH', id: 'ethereum' },
+            'BNBUSDT': { name: 'Binance Coin', symbol: 'BNB', id: 'binancecoin' },
+            'XRPUSDT': { name: 'Ripple', symbol: 'XRP', id: 'ripple' },
+            'DOGEUSDT': { name: 'Dogecoin', symbol: 'DOGE', id: 'dogecoin' },
+            'ADAUSDT': { name: 'Cardano', symbol: 'ADA', id: 'cardano' },
+            'DOTUSDT': { name: 'Polkadot', symbol: 'DOT', id: 'polkadot' },
+            'LINKUSDT': { name: 'Chainlink', symbol: 'LINK', id: 'chainlink' },
+            'LTCUSDT': { name: 'Litecoin', symbol: 'LTC', id: 'litecoin' },
+            'XLMUSDT': { name: 'Stellar', symbol: 'XLM', id: 'stellar' },
+            'TRXUSDT': { name: 'TRON', symbol: 'TRX', id: 'tron' },
+            'SOLUSDT': { name: 'Solana', symbol: 'SOL', id: 'solana' },
+            'AVAXUSDT': { name: 'Avalanche', symbol: 'AVAX', id: 'avalanche-2' },
+            'ATOMUSDT': { name: 'Cosmos', symbol: 'ATOM', id: 'cosmos' },
+            'ALGOUSDT': { name: 'Algorand', symbol: 'ALGO', id: 'algorand' },
+            'VETUSDT': { name: 'VeChain', symbol: 'VET', id: 'vechain' },
+            'XTZUSDT': { name: 'Tezos', symbol: 'XTZ', id: 'tezos' },
+            'EOSUSDT': { name: 'EOS', symbol: 'EOS', id: 'eos' },
+            'XMRUSDT': { name: 'Monero', symbol: 'XMR', id: 'monero' },
+            'AAVEUSDT': { name: 'Aave', symbol: 'AAVE', id: 'aave' }
+        };
+
+        // USDT/TRY kurunu al
+        const usdtTryResponse = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY');
+        const usdtTryData = await usdtTryResponse.json();
+        const usdtTryRate = parseFloat(usdtTryData.price);
+        
+        data.forEach(ticker => {
+            if (cryptoInfo[ticker.symbol]) {
+                const info = cryptoInfo[ticker.symbol];
+                const priceUSD = parseFloat(ticker.lastPrice);
+                const priceTRY = priceUSD * usdtTryRate;
+                const change24h = parseFloat(ticker.priceChangePercent);
+                
+                cryptoCards.push({
+                    id: info.id,
+                    name: info.name,
+                    symbol: info.symbol,
+                    price_try: priceTRY,
+                    price_usd: priceUSD,
+                    change_24h: change24h
+                });
+            }
+        });
+        
+        displayCrypto(cryptoCards);
+        
     } catch (error) {
-        console.error('Haberler çekilirken hata oluştu:', error);
+        console.error('Kripto veriler çekilirken hata oluştu:', error);
+        const cryptoContainer = document.getElementById('cryptoContainer');
+        cryptoContainer.innerHTML = `
+            <div class="error-message">
+                <p>Kripto para verileri yüklenirken bir hata oluştu.</p>
+                <button onclick="retryCryptoFetch()" class="retry-button">Tekrar Dene</button>
+            </div>
+        `;
     }
 }
 
-function displayNews(news) {
-    const newsContainer = document.getElementById('newsContainer');
-    if (!newsContainer) return;
-    
-    newsContainer.innerHTML = '';
-    
-    news.slice(0, 10).forEach(item => {
-        const newsCard = document.createElement('div');
-        newsCard.className = 'news-card';
+function retryCryptoFetch() {
+    const cryptoContainer = document.getElementById('cryptoContainer');
+    cryptoContainer.innerHTML = '<div class="loading-message">Kripto veriler yükleniyor...</div>';
+    fetchCryptoData();
+}
+
+async function fetchCryptoHistory(cryptoId, timeRange = '1D') {
+    try {
+        const symbol = Object.entries(cryptoInfo).find(([_, info]) => info.id === cryptoId)?.[0];
+        if (!symbol) throw new Error('Sembol bulunamadı');
         
-        const image = item.enclosure?.link || 'default-news-image.jpg';
+        let interval;
+        let limit;
         
-        newsCard.innerHTML = `
-            <div class="news-image">
-                <img src="${image}" alt="${item.title}" onerror="this.src='default-news-image.jpg'">
+        switch(timeRange) {
+            case '1G':
+                interval = '5m';
+                limit = 288; // 24 saat * 12 (5 dakikalık dilimler)
+                break;
+            case '1H':
+                interval = '1h';
+                limit = 168; // 7 gün * 24
+                break;
+            case '1A':
+                interval = '1d';
+                limit = 30;
+                break;
+            case '1Y':
+                interval = '1w';
+                limit = 52;
+                break;
+            case '5Y':
+                interval = '1M';
+                limit = 60;
+                break;
+            default:
+                interval = '5m';
+                limit = 288;
+        }
+        
+        const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`);
+        
+        if (!response.ok) {
+            throw new Error('Veri alınamadı');
+        }
+        
+        const data = await response.json();
+        const usdtTryResponse = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY');
+        const usdtTryData = await usdtTryResponse.json();
+        const usdtTryRate = parseFloat(usdtTryData.price);
+        
+        return {
+            dates: data.map(d => new Date(d[0])),
+            values: data.map(d => parseFloat(d[4]) * usdtTryRate) // Kapanış fiyatını TL'ye çevir
+        };
+    } catch (error) {
+        console.error('Geçmiş veriler alınamadı:', error);
+        return { dates: [], values: [] };
+    }
+}
+
+function displayCrypto(cryptoData) {
+    const cryptoContainer = document.getElementById('cryptoContainer');
+    if (!cryptoContainer) return;
+    
+    if (!cryptoData || cryptoData.length === 0) {
+        cryptoContainer.innerHTML = `
+            <div class="error-message">
+                <p>Kripto para verileri bulunamadı.</p>
+                <button onclick="retryCryptoFetch()" class="retry-button">Tekrar Dene</button>
             </div>
-            <div class="news-content">
-                <h3 class="news-title">${item.title}</h3>
-                <p class="news-description">${item.description.slice(0, 150)}...</p>
-                <div class="news-meta">
-                    <span class="news-date">${new Date(item.pubDate).toLocaleDateString('tr-TR')}</span>
-                    <a href="${item.link}" target="_blank" class="news-link" onclick="event.stopPropagation()">Devamını Oku</a>
+        `;
+        return;
+    }
+    
+    cryptoContainer.innerHTML = '';
+    
+    cryptoData.forEach(crypto => {
+        const cryptoCard = document.createElement('div');
+        cryptoCard.className = 'crypto-card';
+        cryptoCard.onclick = () => showCryptoChart(crypto.id, crypto.name);
+        
+        const changeClass = crypto.change_24h > 0 ? 'positive-change' : 'negative-change';
+        const changeSymbol = crypto.change_24h > 0 ? '▲' : '▼';
+        
+        cryptoCard.innerHTML = `
+            <div class="crypto-header">
+                <img src="https://cryptologos.cc/logos/${crypto.id}-${crypto.symbol.toLowerCase()}-logo.png" 
+                     alt="${crypto.name}"
+                     onerror="this.src='https://via.placeholder.com/32?text=${crypto.symbol}'">
+                <div class="crypto-title">
+                    <h3>${crypto.name}</h3>
+                    <span class="crypto-symbol">${crypto.symbol}</span>
                 </div>
+            </div>
+            <div class="crypto-prices">
+                <div class="price-try">${crypto.price_try.toLocaleString('tr-TR')} ₺</div>
+                <div class="price-usd">$${crypto.price_usd.toLocaleString('en-US')}</div>
+            </div>
+            <div class="crypto-change ${changeClass}">
+                ${changeSymbol} ${Math.abs(crypto.change_24h).toFixed(2)}%
             </div>
         `;
         
-        newsCard.onclick = () => window.open(item.link, '_blank');
-        newsContainer.appendChild(newsCard);
+        cryptoContainer.appendChild(cryptoCard);
     });
 }
 
-// Sayfa yüklendiğinde haberleri çek
+async function showCryptoChart(cryptoId, cryptoName) {
+    currentCrypto = cryptoId;
+    const chartTitle = document.getElementById('chartTitle');
+    chartTitle.textContent = `${cryptoName} Grafiği`;
+    modal.style.display = "block";
+    
+    const ctx = document.getElementById('rateChart').getContext('2d');
+    
+    if (chart) {
+        chart.destroy();
+    }
+    
+    const activeTimeRange = document.querySelector('.time-btn.active').dataset.range;
+    const data = await fetchCryptoHistory(cryptoId, activeTimeRange);
+    
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.dates.map(date => date.toLocaleTimeString('tr-TR')),
+            datasets: [{
+                label: `${cryptoName}/TRY`,
+                data: data.values,
+                borderColor: '#27F583',
+                backgroundColor: 'rgba(39, 245, 131, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#27F583',
+                pointBorderColor: '#1A0B2E',
+                pointHoverBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(26, 11, 46, 0.95)',
+                    titleFont: {
+                        size: 12,
+                        weight: 'normal',
+                        family: "'Poppins', sans-serif"
+                    },
+                    bodyFont: {
+                        size: 14,
+                        weight: 'bold',
+                        family: "'Poppins', sans-serif"
+                    },
+                    padding: 15,
+                    cornerRadius: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.parsed.y.toFixed(2)} ₺`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    grid: {
+                        color: 'rgba(39, 245, 131, 0.05)',
+                        drawBorder: false
+                    },
+                    border: {
+                        display: false
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        font: {
+                            size: 12,
+                            family: "'Poppins', sans-serif"
+                        },
+                        padding: 10,
+                        maxTicksLimit: 6
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(39, 245, 131, 0.05)',
+                        drawBorder: false
+                    },
+                    border: {
+                        display: false
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        font: {
+                            size: 12,
+                            family: "'Poppins', sans-serif"
+                        },
+                        maxRotation: 0,
+                        maxTicksLimit: 8,
+                        padding: 10
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            },
+            elements: {
+                line: {
+                    borderCapStyle: 'round',
+                    borderJoinStyle: 'round'
+                }
+            }
+        }
+    });
+}
+
+// Zaman aralığı butonları için olay dinleyicileri
+timeButtons.forEach(button => {
+    button.addEventListener('click', async () => {
+        timeButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        if (currentCrypto) {
+            const data = await fetchCryptoHistory(currentCrypto, button.dataset.range);
+            updateCryptoChart(data);
+        }
+    });
+});
+
+function updateCryptoChart(data) {
+    if (!chart) return;
+    
+    chart.data.labels = data.dates.map(date => date.toLocaleTimeString('tr-TR'));
+    chart.data.datasets[0].data = data.values;
+    chart.update();
+}
+
+// Sayfa yüklendiğinde verileri çek
 document.addEventListener('DOMContentLoaded', function() {
-    fetchNews();
-    // Her 5 dakikada bir haberleri güncelle
-    setInterval(fetchNews, 5 * 60 * 1000);
+    fetchCryptoData();
+    // Her 30 saniyede bir verileri güncelle
+    setInterval(fetchCryptoData, 30 * 1000);
 }); 
