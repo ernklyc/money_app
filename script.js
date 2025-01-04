@@ -6,6 +6,30 @@ let rateHistory = {};
 let chart = null;
 let currentCurrency = null;
 
+// Para birimleri ve sembolleri
+const CURRENCIES = {
+    USD: { name: 'Amerikan Doları', symbol: '$' },
+    EUR: { name: 'Euro', symbol: '€' },
+    JPY: { name: 'Japon Yeni', symbol: '¥' },
+    GBP: { name: 'İngiliz Sterlini', symbol: '£' },
+    CNY: { name: 'Çin Renminbi', symbol: '¥' },
+    AUD: { name: 'Avustralya Doları', symbol: 'A$' },
+    CAD: { name: 'Kanada Doları', symbol: 'C$' },
+    CHF: { name: 'İsviçre Frangı', symbol: 'CHF' },
+    HKD: { name: 'Hong Kong Doları', symbol: 'HK$' },
+    SGD: { name: 'Singapur Doları', symbol: 'S$' },
+    SEK: { name: 'İsveç Kronu', symbol: 'kr' },
+    KRW: { name: 'Güney Kore Wonu', symbol: '₩' },
+    NOK: { name: 'Norveç Kronu', symbol: 'kr' },
+    NZD: { name: 'Yeni Zelanda Doları', symbol: 'NZ$' },
+    INR: { name: 'Hindistan Rupisi', symbol: '₹' },
+    MXN: { name: 'Meksika Pesosu', symbol: '$' },
+    TWD: { name: 'Yeni Tayvan Doları', symbol: 'NT$' },
+    ZAR: { name: 'Güney Afrika Randı', symbol: 'R' },
+    BRL: { name: 'Brezilya Reali', symbol: 'R$' },
+    DKK: { name: 'Danimarka Kronu', symbol: 'kr' }
+};
+
 // Modal elementleri
 const modal = document.getElementById('chartModal');
 const closeBtn = document.getElementsByClassName('close')[0];
@@ -40,26 +64,19 @@ async function fetchExchangeRates() {
         const data = await response.json();
         
         if (!baseRates) {
-            baseRates = {
-                USD: data.rates.USD,
-                EUR: data.rates.EUR,
-                GBP: data.rates.GBP,
-                CHF: data.rates.CHF,
-                JPY: data.rates.JPY,
-                AUD: data.rates.AUD
-            };
+            baseRates = { ...data.rates };
         }
 
-        // Daha gerçekçi değişimler (±%0.05 arasında)
-        const currentRates = [
-            { code: 'USD', name: 'Amerikan Doları', rate: 1 / (data.rates.USD * (1 + (Math.random() * 0.001 - 0.0005))) },
-            { code: 'EUR', name: 'Euro', rate: 1 / (data.rates.EUR * (1 + (Math.random() * 0.001 - 0.0005))) },
-            { code: 'GBP', name: 'İngiliz Sterlini', rate: 1 / (data.rates.GBP * (1 + (Math.random() * 0.001 - 0.0005))) },
-            { code: 'CHF', name: 'İsviçre Frangı', rate: 1 / (data.rates.CHF * (1 + (Math.random() * 0.001 - 0.0005))) },
-            { code: 'JPY', name: '100 Japon Yeni', rate: 100 / (data.rates.JPY * (1 + (Math.random() * 0.001 - 0.0005))) },
-            { code: 'AUD', name: 'Avustralya Doları', rate: 1 / (data.rates.AUD * (1 + (Math.random() * 0.001 - 0.0005))) }
-        ];
-        
+        // Tüm para birimleri için kurları hesapla
+        const currentRates = Object.entries(CURRENCIES).map(([code, info]) => ({
+            code,
+            name: info.name,
+            symbol: info.symbol,
+            rate: code === 'JPY' ? 
+                100 / (data.rates[code] * (1 + (Math.random() * 0.001 - 0.0005))) :
+                1 / (data.rates[code] * (1 + (Math.random() * 0.001 - 0.0005)))
+        }));
+
         // Geçmiş verileri güncelle
         currentRates.forEach(rate => {
             if (!rateHistory[rate.code]) {
@@ -73,7 +90,6 @@ async function fetchExchangeRates() {
             rateHistory[rate.code].values.push(rate.rate);
             rateHistory[rate.code].times.push(new Date());
 
-            // Son 50 veriyi tut
             if (rateHistory[rate.code].values.length > 50) {
                 rateHistory[rate.code].values.shift();
                 rateHistory[rate.code].times.shift();
@@ -297,7 +313,6 @@ function displayRates(rates, prevRates) {
     const ratesContainer = document.getElementById('ratesContainer');
     const oldInputValues = {};
     
-    // Mevcut input değerlerini kaydet
     document.querySelectorAll('.calc-input').forEach(input => {
         const currencyCode = input.getAttribute('data-currency');
         if (input.value) {
@@ -324,23 +339,30 @@ function displayRates(rates, prevRates) {
         const changeClass = percentageChange > 0 ? 'positive-change' : percentageChange < 0 ? 'negative-change' : '';
         const changeSymbol = percentageChange > 0 ? '▲' : percentageChange < 0 ? '▼' : '';
         
-        // Eski input değerini al
         const oldValue = oldInputValues[rate.code] || '';
-        const oldResult = oldValue ? `${oldValue} ${rate.code} = ${(oldValue * rate.rate).toFixed(2)} ₺` : '';
+        const oldResult = oldValue ? `${oldValue} ${rate.code} (${rate.symbol}) = ${(oldValue * rate.rate).toFixed(2)}₺` : '';
         
         rateCard.innerHTML = `
-            <div class="currency">${rate.code}</div>
+            <div class="currency">${rate.code} <span class="currency-symbol">${rate.symbol}</span></div>
             <div class="currency-name">${rate.name}</div>
             <div class="rate-value">${rateValue} ₺</div>
             <div class="percentage-change ${changeClass}">
                 ${changeSymbol} ${Math.abs(percentageChange).toFixed(4)}%
             </div>
             <div class="calculator">
-                <input type="number" class="calc-input" placeholder="Miktar girin" 
-                    onkeyup="calculateExchange(this, ${rate.rate}, '${rate.code}')"
-                    onclick="event.stopPropagation()"
-                    data-currency="${rate.code}"
-                    value="${oldValue}">
+                <div class="input-wrapper">
+                    <input type="number" class="calc-input" placeholder="Miktar girin" 
+                        onkeyup="calculateExchange(this, ${rate.rate}, '${rate.code}', '${rate.symbol}')"
+                        onclick="event.stopPropagation()"
+                        data-currency="${rate.code}"
+                        data-symbol="${rate.symbol}"
+                        data-rate="${rate.rate}"
+                        value="${oldValue}">
+                    <div class="number-spinner">
+                        <button class="spinner-button" onclick="event.stopPropagation(); adjustValue(this, 1)">+</button>
+                        <button class="spinner-button" onclick="event.stopPropagation(); adjustValue(this, -1)">-</button>
+                    </div>
+                </div>
                 <div class="calc-result" style="opacity: ${oldValue ? '1' : '0'}">${oldResult}</div>
             </div>
         `;
@@ -348,14 +370,36 @@ function displayRates(rates, prevRates) {
     });
 }
 
-function calculateExchange(input, rate, code) {
+function adjustValue(button, change) {
+    const input = button.closest('.calculator').querySelector('.calc-input');
+    let value = parseFloat(input.value) || 0;
+    value += change;
+    if (value < 0) value = 0;
+    input.value = value;
+    
+    // Değişikliği hesapla ve göster
+    const rate = parseFloat(input.getAttribute('data-rate'));
+    const code = input.getAttribute('data-currency');
+    const symbol = input.getAttribute('data-symbol');
+    calculateExchange(input, rate, code, symbol);
+}
+
+function calculateExchange(input, rate, code, symbol) {
     const value = input.value;
-    const resultDiv = input.parentElement.querySelector('.calc-result');
+    const resultDiv = input.parentElement.parentElement.querySelector('.calc-result');
     
     if (value && value > 0) {
-        const result = (value * rate).toFixed(2);
-        resultDiv.textContent = `${value} ${code} = ${result} ₺`;
+        const formattedValue = parseFloat(value).toLocaleString('tr-TR', {
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 0
+        });
+        const result = (value * rate).toLocaleString('tr-TR', {
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2
+        });
+        resultDiv.textContent = `${formattedValue} ${code} (${symbol}) = ${result}₺`;
         resultDiv.style.opacity = '1';
+        resultDiv.style.color = '#27F583';
     } else {
         resultDiv.style.opacity = '0';
     }
@@ -366,6 +410,119 @@ function updateLastUpdateTime() {
     const lastUpdateElement = document.getElementById('lastUpdate');
     lastUpdateElement.textContent = now.toLocaleString('tr-TR');
 }
+
+// Arama fonksiyonu
+function filterCurrencies(searchText) {
+    const rateCards = document.querySelectorAll('.rate-card');
+    const searchLower = searchText.toLowerCase().trim();
+    let hasResults = false;
+    
+    rateCards.forEach(card => {
+        const currencyCode = card.querySelector('.currency').textContent.toLowerCase();
+        const currencyName = card.querySelector('.currency-name').textContent.toLowerCase();
+        
+        if (currencyCode.includes(searchLower) || currencyName.includes(searchLower)) {
+            card.style.display = 'block';
+            card.style.animation = 'fadeIn 0.3s ease forwards';
+            hasResults = true;
+            
+            if (searchText) {
+                highlightText(card, searchLower);
+            } else {
+                removeHighlights(card);
+            }
+        } else {
+            card.style.display = 'none';
+            card.style.animation = 'fadeOut 0.3s ease forwards';
+        }
+    });
+    
+    // Arama sonucu yoksa bilgi mesajı göster
+    const noResultsMsg = document.getElementById('noResultsMsg') || createNoResultsMessage();
+    if (!hasResults && searchText) {
+        noResultsMsg.style.display = 'block';
+        noResultsMsg.style.animation = 'fadeIn 0.3s ease forwards';
+    } else {
+        noResultsMsg.style.display = 'none';
+    }
+}
+
+// Sonuç bulunamadı mesajı oluştur
+function createNoResultsMessage() {
+    const msg = document.createElement('div');
+    msg.id = 'noResultsMsg';
+    msg.style.cssText = `
+        text-align: center;
+        padding: 40px;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 1.1em;
+        display: none;
+    `;
+    msg.textContent = 'Aradığınız para birimi bulunamadı.';
+    document.querySelector('.rates-container').appendChild(msg);
+    return msg;
+}
+
+// Metni vurgulama fonksiyonu
+function highlightText(card, searchText) {
+    const currencyEl = card.querySelector('.currency');
+    const nameEl = card.querySelector('.currency-name');
+    
+    if (!currencyEl.hasAttribute('data-original')) {
+        currencyEl.setAttribute('data-original', currencyEl.innerHTML);
+        nameEl.setAttribute('data-original', nameEl.textContent);
+    }
+    
+    const currencyHtml = currencyEl.getAttribute('data-original');
+    const nameText = nameEl.getAttribute('data-original');
+    
+    const highlightedCurrency = currencyHtml.replace(
+        new RegExp(searchText, 'gi'),
+        match => `<span class="highlight">${match}</span>`
+    );
+    
+    const highlightedName = nameText.replace(
+        new RegExp(searchText, 'gi'),
+        match => `<span class="highlight">${match}</span>`
+    );
+    
+    currencyEl.innerHTML = highlightedCurrency;
+    nameEl.innerHTML = highlightedName;
+}
+
+// Vurguları kaldırma fonksiyonu
+function removeHighlights(card) {
+    const currencyEl = card.querySelector('.currency');
+    const nameEl = card.querySelector('.currency-name');
+    
+    if (currencyEl.hasAttribute('data-original')) {
+        currencyEl.innerHTML = currencyEl.getAttribute('data-original');
+        nameEl.innerHTML = nameEl.getAttribute('data-original');
+    }
+}
+
+// Animasyonlar için stil ekle
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeOut {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(10px); }
+    }
+    
+    .highlight {
+        background: rgba(39, 245, 131, 0.15);
+        color: #27F583;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+`;
+document.head.appendChild(style);
 
 // Sayfa yüklendiğinde kurları çek
 fetchExchangeRates();
