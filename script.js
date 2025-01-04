@@ -1,5 +1,5 @@
 const API_URL = 'https://api.exchangerate-api.com/v4/latest/TRY';
-let exchangeRates = [];
+let previousRates = null;
 
 const ratesContainer = document.getElementById('ratesContainer');
 const lastUpdateElement = document.getElementById('lastUpdate');
@@ -9,19 +9,16 @@ async function fetchExchangeRates() {
         const response = await fetch(API_URL);
         const data = await response.json();
         
-        // TL karşısındaki değerleri hesapla
-        const rates = [
+        const currentRates = [
             { code: 'USD', name: 'Amerikan Doları', rate: 1 / data.rates.USD },
             { code: 'EUR', name: 'Euro', rate: 1 / data.rates.EUR },
             { code: 'GBP', name: 'İngiliz Sterlini', rate: 1 / data.rates.GBP },
             { code: 'CHF', name: 'İsviçre Frangı', rate: 1 / data.rates.CHF },
-            { code: 'JPY', name: 'Japon Yeni', rate: 1 / data.rates.JPY },
-            { code: 'AUD', name: 'Avustralya Doları', rate: 1 / data.rates.AUD },
-            { code: 'CAD', name: 'Kanada Doları', rate: 1 / data.rates.CAD },
-            { code: 'KWD', name: 'Kuveyt Dinarı', rate: 1 / data.rates.KWD }
+            { code: 'JPY', name: '100 Japon Yeni', rate: 100 / data.rates.JPY },
+            { code: 'AUD', name: 'Avustralya Doları', rate: 1 / data.rates.AUD }
         ];
-        
-        displayRates(rates);
+
+        displayRates(currentRates);
         updateLastUpdateTime();
     } catch (error) {
         console.error('Döviz kurları çekilirken hata oluştu:', error);
@@ -36,14 +33,14 @@ function displayRates(rates) {
         const rateCard = document.createElement('div');
         rateCard.className = 'rate-card';
         
+        // Japon Yeni için özel format
+        const isJPY = rate.code === 'JPY';
+        const rateValue = isJPY ? rate.rate.toFixed(2) : rate.rate.toFixed(4);
+        
         rateCard.innerHTML = `
             <div class="currency">${rate.code}</div>
             <div class="currency-name">${rate.name}</div>
-            <div class="rates">
-                <div class="value">
-                    <span class="rate-value">${rate.rate.toFixed(4)} ₺</span>
-                </div>
-            </div>
+            <div class="rate-value">${rateValue} ₺</div>
         `;
         ratesContainer.appendChild(rateCard);
     });
@@ -57,5 +54,5 @@ function updateLastUpdateTime() {
 // Sayfa yüklendiğinde kurları çek
 fetchExchangeRates();
 
-// Her 1 dakikada bir kurları güncelle
-setInterval(fetchExchangeRates, 60 * 1000); 
+// Her 10 saniyede bir kurları güncelle
+setInterval(fetchExchangeRates, 10000); 
