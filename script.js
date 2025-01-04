@@ -10,24 +10,34 @@ let currentCurrency = null;
 const CURRENCIES = {
     USD: { name: 'Amerikan Doları', symbol: '$' },
     EUR: { name: 'Euro', symbol: '€' },
-    JPY: { name: 'Japon Yeni', symbol: '¥' },
     GBP: { name: 'İngiliz Sterlini', symbol: '£' },
-    CNY: { name: 'Çin Renminbi', symbol: '¥' },
+    JPY: { name: 'Japon Yeni', symbol: '¥' },
     AUD: { name: 'Avustralya Doları', symbol: 'A$' },
     CAD: { name: 'Kanada Doları', symbol: 'C$' },
     CHF: { name: 'İsviçre Frangı', symbol: 'CHF' },
+    CNY: { name: 'Çin Yuanı', symbol: '¥' },
     HKD: { name: 'Hong Kong Doları', symbol: 'HK$' },
-    SGD: { name: 'Singapur Doları', symbol: 'S$' },
+    NZD: { name: 'Yeni Zelanda Doları', symbol: 'NZ$' },
     SEK: { name: 'İsveç Kronu', symbol: 'kr' },
     KRW: { name: 'Güney Kore Wonu', symbol: '₩' },
+    SGD: { name: 'Singapur Doları', symbol: 'S$' },
     NOK: { name: 'Norveç Kronu', symbol: 'kr' },
-    NZD: { name: 'Yeni Zelanda Doları', symbol: 'NZ$' },
-    INR: { name: 'Hindistan Rupisi', symbol: '₹' },
     MXN: { name: 'Meksika Pesosu', symbol: '$' },
-    TWD: { name: 'Yeni Tayvan Doları', symbol: 'NT$' },
+    INR: { name: 'Hindistan Rupisi', symbol: '₹' },
+    RUB: { name: 'Rus Rublesi', symbol: '₽' },
     ZAR: { name: 'Güney Afrika Randı', symbol: 'R' },
     BRL: { name: 'Brezilya Reali', symbol: 'R$' },
-    DKK: { name: 'Danimarka Kronu', symbol: 'kr' }
+    DKK: { name: 'Danimarka Kronu', symbol: 'kr' },
+    PLN: { name: 'Polonya Zlotisi', symbol: 'zł' },
+    THB: { name: 'Tayland Bahtı', symbol: '฿' },
+    IDR: { name: 'Endonezya Rupisi', symbol: 'Rp' },
+    HUF: { name: 'Macar Forinti', symbol: 'Ft' },
+    CZK: { name: 'Çek Korunası', symbol: 'Kč' },
+    ILS: { name: 'İsrail Şekeli', symbol: '₪' },
+    PHP: { name: 'Filipin Pesosu', symbol: '₱' },
+    RON: { name: 'Romen Leyi', symbol: 'lei' },
+    BGN: { name: 'Bulgar Levası', symbol: 'лв' },
+    ISK: { name: 'İzlanda Kronu', symbol: 'kr' }
 };
 
 // Modal elementleri
@@ -333,6 +343,9 @@ function displayRates(rates, prevRates) {
     let visibleCardCount = 0;
     
     rates.forEach((rate, index) => {
+        // NaN kontrolü yap
+        if (isNaN(rate.rate)) return;
+        
         const rateCard = document.createElement('div');
         rateCard.className = 'rate-card';
         rateCard.onclick = () => showChart(rate.code);
@@ -341,7 +354,7 @@ function displayRates(rates, prevRates) {
         const rateValue = isJPY ? rate.rate.toFixed(2) : rate.rate.toFixed(4);
         
         let percentageChange = 0;
-        if (prevRates) {
+        if (prevRates && prevRates[index] && !isNaN(prevRates[index].rate)) {
             const prevRate = prevRates[index].rate;
             percentageChange = calculatePercentageChange(rate.rate, prevRate);
         }
@@ -350,32 +363,87 @@ function displayRates(rates, prevRates) {
         const changeSymbol = percentageChange > 0 ? '▲' : percentageChange < 0 ? '▼' : '';
         
         const oldValue = oldInputValues[rate.code] || '';
-        const oldResult = oldValue ? `${oldValue} ${rate.code} (${rate.symbol}) = ${(oldValue * rate.rate).toFixed(2)}₺` : '';
+        const oldResult = oldValue ? `${oldValue} ${rate.code} = ${(oldValue * rate.rate).toFixed(2)}₺` : '';
         
-        rateCard.innerHTML = `
-            <div class="currency">${rate.code} <span class="currency-symbol">${rate.symbol}</span></div>
-            <div class="currency-name">${rate.name}</div>
-            <div class="rate-value">${rateValue} ₺</div>
-            <div class="percentage-change ${changeClass}">
-                ${changeSymbol} ${Math.abs(percentageChange).toFixed(4)}%
-            </div>
-            <div class="calculator">
-                <div class="input-wrapper">
-                    <input type="number" class="calc-input" placeholder="Miktar girin" 
-                        onkeyup="calculateExchange(this, ${rate.rate}, '${rate.code}', '${rate.symbol}')"
-                        onclick="event.stopPropagation()"
-                        data-currency="${rate.code}"
-                        data-symbol="${rate.symbol}"
-                        data-rate="${rate.rate}"
-                        value="${oldValue}">
-                    <div class="number-spinner">
-                        <button class="spinner-button" onclick="event.stopPropagation(); adjustValue(this, 1)">+</button>
-                        <button class="spinner-button" onclick="event.stopPropagation(); adjustValue(this, -1)">-</button>
-                    </div>
-                </div>
-                <div class="calc-result" style="opacity: ${oldValue ? '1' : '0'}">${oldResult}</div>
-            </div>
-        `;
+        // Para birimi ve sembol bölümü
+        const currencyContainer = document.createElement('div');
+        currencyContainer.className = 'currency';
+        currencyContainer.textContent = rate.code + ' ';
+        
+        const symbolSpan = document.createElement('span');
+        symbolSpan.className = 'currency-symbol';
+        symbolSpan.textContent = rate.symbol;
+        currencyContainer.appendChild(symbolSpan);
+        rateCard.appendChild(currencyContainer);
+        
+        // Para birimi adı
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'currency-name';
+        nameDiv.textContent = rate.name;
+        rateCard.appendChild(nameDiv);
+        
+        // Kur değeri
+        const rateValueDiv = document.createElement('div');
+        rateValueDiv.className = 'rate-value';
+        rateValueDiv.textContent = rateValue;
+        rateCard.appendChild(rateValueDiv);
+        
+        // Yüzde değişim
+        const percentageDiv = document.createElement('div');
+        percentageDiv.className = `percentage-change ${changeClass}`;
+        percentageDiv.textContent = `${changeSymbol} ${Math.abs(percentageChange).toFixed(4)}%`;
+        rateCard.appendChild(percentageDiv);
+        
+        // Hesaplayıcı bölümü
+        const calculatorDiv = document.createElement('div');
+        calculatorDiv.className = 'calculator';
+        
+        const inputWrapper = document.createElement('div');
+        inputWrapper.className = 'input-wrapper';
+        
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'calc-input';
+        input.placeholder = 'Miktar girin';
+        input.value = oldValue;
+        input.setAttribute('data-currency', rate.code);
+        input.setAttribute('data-rate', rate.rate);
+        input.onkeyup = () => calculateExchange(input, rate.rate, rate.code);
+        input.onclick = (e) => e.stopPropagation();
+        
+        const spinnerDiv = document.createElement('div');
+        spinnerDiv.className = 'number-spinner';
+        
+        const plusButton = document.createElement('button');
+        plusButton.className = 'spinner-button';
+        plusButton.textContent = '+';
+        plusButton.onclick = (e) => {
+            e.stopPropagation();
+            adjustValue(plusButton, 1);
+        };
+        
+        const minusButton = document.createElement('button');
+        minusButton.className = 'spinner-button';
+        minusButton.textContent = '-';
+        minusButton.onclick = (e) => {
+            e.stopPropagation();
+            adjustValue(minusButton, -1);
+        };
+        
+        spinnerDiv.appendChild(plusButton);
+        spinnerDiv.appendChild(minusButton);
+        inputWrapper.appendChild(input);
+        inputWrapper.appendChild(spinnerDiv);
+        
+        const resultDiv = document.createElement('div');
+        resultDiv.className = 'calc-result';
+        resultDiv.style.opacity = oldValue ? '1' : '0';
+        resultDiv.textContent = oldResult;
+        
+        calculatorDiv.appendChild(inputWrapper);
+        calculatorDiv.appendChild(resultDiv);
+        rateCard.appendChild(calculatorDiv);
+        
         ratesContainer.appendChild(rateCard);
         
         // Arama filtresini uygula
@@ -417,25 +485,27 @@ function adjustValue(button, change) {
     calculateExchange(input, rate, code, symbol);
 }
 
-function calculateExchange(input, rate, code, symbol) {
+function calculateExchange(input, rate, code) {
     const value = input.value;
     const resultDiv = input.parentElement.parentElement.querySelector('.calc-result');
     
-    if (value && value > 0) {
-        const formattedValue = parseFloat(value).toLocaleString('tr-TR', {
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 0
-        });
-        const result = (value * rate).toLocaleString('tr-TR', {
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 2
-        });
-        resultDiv.textContent = `${formattedValue} ${code} (${symbol}) = ${result}₺`;
-        resultDiv.style.opacity = '1';
-        resultDiv.style.color = '#27F583';
-    } else {
+    if (!value || value <= 0) {
         resultDiv.style.opacity = '0';
+        return;
     }
+    
+    const formattedValue = parseFloat(value).toLocaleString('tr-TR', {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 0
+    });
+    const result = (value * rate).toLocaleString('tr-TR', {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2
+    });
+    
+    resultDiv.textContent = `${formattedValue} ${code} = ${result}₺`;
+    resultDiv.style.opacity = '1';
+    resultDiv.style.color = '#27F583';
 }
 
 function updateLastUpdateTime() {
@@ -451,16 +521,28 @@ function filterCurrencies(searchText) {
     let hasResults = false;
     
     rateCards.forEach(card => {
-        const currencyCode = card.querySelector('.currency').textContent.toLowerCase();
-        const currencyName = card.querySelector('.currency-name').textContent.toLowerCase();
+        const currencyEl = card.querySelector('.currency');
+        const currencyCode = currencyEl.firstChild.textContent.trim();
+        const currencyName = card.querySelector('.currency-name').textContent;
         
-        if (currencyCode.includes(searchLower) || currencyName.includes(searchLower)) {
+        if (currencyCode.toLowerCase().includes(searchLower) || 
+            currencyName.toLowerCase().includes(searchLower)) {
             card.style.display = 'block';
             card.style.animation = 'fadeIn 0.3s ease forwards';
             hasResults = true;
             
             if (searchText) {
-                highlightText(card, searchLower);
+                // Para birimi kodu tam eşleşme kontrolü
+                if (currencyCode.toLowerCase() === searchLower) {
+                    currencyEl.innerHTML = `<span class="highlight">${currencyCode}</span> <span class="currency-symbol">${currencyEl.querySelector('.currency-symbol').textContent}</span>`;
+                } else {
+                    // Para birimi adında arama
+                    const highlightedName = currencyName.replace(
+                        new RegExp(searchText, 'gi'),
+                        match => `<span class="highlight">${match}</span>`
+                    );
+                    card.querySelector('.currency-name').innerHTML = highlightedName;
+                }
             } else {
                 removeHighlights(card);
             }
@@ -501,15 +583,19 @@ function highlightText(card, searchText) {
     const currencyEl = card.querySelector('.currency');
     const nameEl = card.querySelector('.currency-name');
     
+    // Orijinal metinleri sakla
     if (!currencyEl.hasAttribute('data-original')) {
-        currencyEl.setAttribute('data-original', currencyEl.innerHTML);
+        currencyEl.setAttribute('data-original', currencyEl.querySelector('.currency-symbol').textContent);
         nameEl.setAttribute('data-original', nameEl.textContent);
     }
     
-    const currencyHtml = currencyEl.getAttribute('data-original');
+    // Para birimi kodunu ve sembolü ayır
+    const currencyCode = currencyEl.childNodes[0].textContent.trim();
+    const currencySymbol = currencyEl.querySelector('.currency-symbol').textContent;
     const nameText = nameEl.getAttribute('data-original');
     
-    const highlightedCurrency = currencyHtml.replace(
+    // Vurgulamaları uygula
+    const highlightedCode = currencyCode.replace(
         new RegExp(searchText, 'gi'),
         match => `<span class="highlight">${match}</span>`
     );
@@ -519,7 +605,8 @@ function highlightText(card, searchText) {
         match => `<span class="highlight">${match}</span>`
     );
     
-    currencyEl.innerHTML = highlightedCurrency;
+    // Güncellenmiş içeriği ayarla
+    currencyEl.innerHTML = highlightedCode + ' <span class="currency-symbol">' + currencySymbol + '</span>';
     nameEl.innerHTML = highlightedName;
 }
 
@@ -527,11 +614,14 @@ function highlightText(card, searchText) {
 function removeHighlights(card) {
     const currencyEl = card.querySelector('.currency');
     const nameEl = card.querySelector('.currency-name');
+    const symbol = currencyEl.querySelector('.currency-symbol').textContent;
     
-    if (currencyEl.hasAttribute('data-original')) {
-        currencyEl.innerHTML = currencyEl.getAttribute('data-original');
-        nameEl.innerHTML = nameEl.getAttribute('data-original');
-    }
+    // Para birimi kodunu al
+    const code = currencyEl.firstChild.textContent.trim();
+    
+    // Elementleri orijinal haline getir
+    currencyEl.innerHTML = `${code} <span class="currency-symbol">${symbol}</span>`;
+    nameEl.innerHTML = nameEl.textContent;
 }
 
 // Animasyonlar için stil ekle
