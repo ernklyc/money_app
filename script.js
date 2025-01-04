@@ -807,4 +807,58 @@ function updateWeatherUI(data) {
                             data.weather[0].description.slice(1);
     
     weatherInfo.style.display = 'flex';
-} 
+}
+
+// Haber fonksiyonları
+async function fetchNews() {
+    try {
+        const response = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.aa.com.tr/tr/rss/default?cat=economy');
+        const data = await response.json();
+        
+        if (data.status === 'ok') {
+            displayNews(data.items);
+        } else {
+            console.error('Haberler alınamadı');
+        }
+    } catch (error) {
+        console.error('Haberler çekilirken hata oluştu:', error);
+    }
+}
+
+function displayNews(news) {
+    const newsContainer = document.getElementById('newsContainer');
+    if (!newsContainer) return;
+    
+    newsContainer.innerHTML = '';
+    
+    news.slice(0, 10).forEach(item => {
+        const newsCard = document.createElement('div');
+        newsCard.className = 'news-card';
+        
+        const image = item.enclosure?.link || 'default-news-image.jpg';
+        
+        newsCard.innerHTML = `
+            <div class="news-image">
+                <img src="${image}" alt="${item.title}" onerror="this.src='default-news-image.jpg'">
+            </div>
+            <div class="news-content">
+                <h3 class="news-title">${item.title}</h3>
+                <p class="news-description">${item.description.slice(0, 150)}...</p>
+                <div class="news-meta">
+                    <span class="news-date">${new Date(item.pubDate).toLocaleDateString('tr-TR')}</span>
+                    <a href="${item.link}" target="_blank" class="news-link" onclick="event.stopPropagation()">Devamını Oku</a>
+                </div>
+            </div>
+        `;
+        
+        newsCard.onclick = () => window.open(item.link, '_blank');
+        newsContainer.appendChild(newsCard);
+    });
+}
+
+// Sayfa yüklendiğinde haberleri çek
+document.addEventListener('DOMContentLoaded', function() {
+    fetchNews();
+    // Her 5 dakikada bir haberleri güncelle
+    setInterval(fetchNews, 5 * 60 * 1000);
+}); 
