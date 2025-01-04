@@ -312,7 +312,10 @@ function calculatePercentageChange(currentRate, previousRate) {
 function displayRates(rates, prevRates) {
     const ratesContainer = document.getElementById('ratesContainer');
     const oldInputValues = {};
+    const searchInput = document.getElementById('searchInput');
+    const searchText = searchInput.value.toLowerCase().trim();
     
+    // Mevcut input değerlerini kaydet
     document.querySelectorAll('.calc-input').forEach(input => {
         const currencyCode = input.getAttribute('data-currency');
         if (input.value) {
@@ -320,7 +323,14 @@ function displayRates(rates, prevRates) {
         }
     });
     
+    // Varsa eski "sonuç bulunamadı" mesajını kaldır
+    const oldNoResultsMsg = document.getElementById('noResultsMsg');
+    if (oldNoResultsMsg) {
+        oldNoResultsMsg.remove();
+    }
+    
     ratesContainer.innerHTML = '';
+    let visibleCardCount = 0;
     
     rates.forEach((rate, index) => {
         const rateCard = document.createElement('div');
@@ -367,7 +377,30 @@ function displayRates(rates, prevRates) {
             </div>
         `;
         ratesContainer.appendChild(rateCard);
+        
+        // Arama filtresini uygula
+        if (searchText) {
+            const currencyCode = rate.code.toLowerCase();
+            const currencyName = rate.name.toLowerCase();
+            if (!currencyCode.includes(searchText) && !currencyName.includes(searchText)) {
+                rateCard.style.display = 'none';
+            } else {
+                rateCard.style.display = 'block';
+                highlightText(rateCard, searchText);
+                visibleCardCount++;
+            }
+        } else {
+            visibleCardCount++;
+        }
     });
+    
+    // Arama sonucu yoksa mesajı göster
+    if (searchText && visibleCardCount === 0) {
+        const noResultsMsg = createNoResultsMessage();
+        noResultsMsg.style.display = 'block';
+        noResultsMsg.style.animation = 'fadeIn 0.3s ease forwards';
+        ratesContainer.appendChild(noResultsMsg);
+    }
 }
 
 function adjustValue(button, change) {
