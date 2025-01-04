@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Döviz Takip</title>
+    <title>Döviz Takip | Trading Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Güncel Döviz Kurları</h1>
+        <h1>Piyasa Özeti</h1>
         
         <div class="currency-box">
             <div id="ratesContainer" class="rates-container">
@@ -31,11 +31,11 @@
             <span class="close">&times;</span>
             <h2 id="chartTitle"></h2>
             <div class="time-range-buttons">
-                <button class="time-btn active" data-range="1G">1 Gün</button>
-                <button class="time-btn" data-range="1H">1 Hafta</button>
-                <button class="time-btn" data-range="1A">1 Ay</button>
-                <button class="time-btn" data-range="1Y">1 Yıl</button>
-                <button class="time-btn" data-range="5Y">5 Yıl</button>
+                <button class="time-btn active" data-range="1G">1G</button>
+                <button class="time-btn" data-range="1H">1H</button>
+                <button class="time-btn" data-range="1A">1A</button>
+                <button class="time-btn" data-range="1Y">1Y</button>
+                <button class="time-btn" data-range="5Y">5Y</button>
             </div>
             <div class="chart-container">
                 <canvas id="rateChart"></canvas>

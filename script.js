@@ -187,16 +187,16 @@ async function showChart(currencyCode) {
             datasets: [{
                 label: `${currencyCode}/TRY`,
                 data: data.values,
-                borderColor: '#00ff9d',
-                backgroundColor: 'rgba(0, 255, 157, 0.1)',
-                borderWidth: 3,
-                tension: 0.4,
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                tension: 0.1,
                 fill: true,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                pointBackgroundColor: '#00ff9d',
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                pointBackgroundColor: '#3B82F6',
                 pointBorderColor: '#fff',
-                pointBorderWidth: 2
+                pointHoverBorderWidth: 2
             }]
         },
         options: {
@@ -204,57 +204,67 @@ async function showChart(currencyCode) {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    labels: {
-                        color: '#fff',
-                        font: {
-                            size: 14,
-                            family: "'Poppins', sans-serif"
-                        }
-                    }
+                    display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(17, 25, 40, 0.9)',
                     titleFont: {
-                        size: 14,
+                        size: 12,
+                        weight: 'normal',
                         family: "'Poppins', sans-serif"
                     },
                     bodyFont: {
                         size: 13,
+                        weight: 'bold',
                         family: "'Poppins', sans-serif"
                     },
                     padding: 12,
                     cornerRadius: 8,
-                    displayColors: false
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.parsed.y.toFixed(4)} ₺`;
+                        }
+                    }
                 }
             },
             scales: {
                 y: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
+                        color: 'rgba(255, 255, 255, 0.05)',
                         drawBorder: false
                     },
+                    border: {
+                        display: false
+                    },
                     ticks: {
-                        color: '#fff',
+                        color: 'rgba(255, 255, 255, 0.5)',
                         font: {
-                            size: 12,
+                            size: 11,
                             family: "'Poppins', sans-serif"
                         },
-                        padding: 8
+                        padding: 8,
+                        maxTicksLimit: 6
                     }
                 },
                 x: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
+                        color: 'rgba(255, 255, 255, 0.05)',
                         drawBorder: false
                     },
+                    border: {
+                        display: false
+                    },
                     ticks: {
-                        color: '#fff',
+                        color: 'rgba(255, 255, 255, 0.5)',
                         font: {
-                            size: 12,
+                            size: 11,
                             family: "'Poppins', sans-serif"
                         },
-                        maxRotation: 45,
-                        minRotation: 45,
+                        maxRotation: 0,
+                        maxTicksLimit: 8,
                         padding: 8
                     }
                 }
@@ -266,6 +276,12 @@ async function showChart(currencyCode) {
             animation: {
                 duration: 1000,
                 easing: 'easeInOutQuart'
+            },
+            elements: {
+                line: {
+                    borderCapStyle: 'round',
+                    borderJoinStyle: 'round'
+                }
             }
         }
     });
