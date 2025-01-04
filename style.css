@@ -486,4 +486,137 @@ h1::after {
 .nav-links a.active::after {
     width: 40px;
     background: #27F583;
+}
+
+.weather-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-left: 20px;
+    padding-left: 20px;
+    border-left: 1px solid rgba(39, 245, 131, 0.1);
+}
+
+.city-selector {
+    position: relative;
+}
+
+.city-button {
+    background: rgba(39, 245, 131, 0.05);
+    border: 1px solid rgba(39, 245, 131, 0.2);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 10px 15px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.city-button:hover {
+    background: rgba(39, 245, 131, 0.1);
+    border-color: rgba(39, 245, 131, 0.3);
+}
+
+.city-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 250px;
+    background: rgba(26, 11, 46, 0.95);
+    border: 1px solid rgba(39, 245, 131, 0.2);
+    border-radius: 12px;
+    margin-top: 8px;
+    padding: 10px;
+    display: none;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.city-search {
+    width: 100%;
+    padding: 10px;
+    background: rgba(39, 245, 131, 0.05);
+    border: 1px solid rgba(39, 245, 131, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+.city-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.city-item {
+    padding: 8px 12px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.city-item:hover {
+    background: rgba(39, 245, 131, 0.1);
+    color: #fff;
+}
+
+.weather-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 15px;
+    background: rgba(39, 245, 131, 0.05);
+    border: 1px solid rgba(39, 245, 131, 0.2);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.weather-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.weather-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.temperature {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #27F583;
+}
+
+.description {
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Scrollbar stilleri */
+.city-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.city-list::-webkit-scrollbar-track {
+    background: rgba(39, 245, 131, 0.05);
+    border-radius: 3px;
+}
+
+.city-list::-webkit-scrollbar-thumb {
+    background: rgba(39, 245, 131, 0.2);
+    border-radius: 3px;
+}
+
+.city-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(39, 245, 131, 0.3);
 } 

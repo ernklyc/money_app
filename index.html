@@ -30,6 +30,27 @@
                 <a href="#">Grafikler</a>
                 <a href="#">Haberler</a>
                 <a href="#">Analiz</a>
+                <div class="weather-container">
+                    <div id="citySelector" class="city-selector">
+                        <button id="cityButton" class="city-button">
+                            <span id="selectedCity">Şehir Seç</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                        <div id="cityDropdown" class="city-dropdown">
+                            <input type="text" id="citySearch" placeholder="Şehir ara..." class="city-search">
+                            <div id="cityList" class="city-list"></div>
+                        </div>
+                    </div>
+                    <div id="weatherInfo" class="weather-info">
+                        <div class="weather-icon"></div>
+                        <div class="weather-details">
+                            <span class="temperature"></span>
+                            <span class="description"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>

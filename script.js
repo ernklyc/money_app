@@ -652,4 +652,116 @@ fetchExchangeRates();
 
 // Her 3 saniyede bir kurları güncelle
 clearInterval(updateInterval);
-updateInterval = setInterval(fetchExchangeRates, 3000); 
+updateInterval = setInterval(fetchExchangeRates, 3000);
+
+// Türkiye şehirleri
+const CITIES = [
+    "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir",
+    "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli",
+    "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari",
+    "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir",
+    "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir",
+    "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat",
+    "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman",
+    "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
+];
+
+// Şehir seçici için event listener'ları ekle
+document.addEventListener('DOMContentLoaded', function() {
+    const cityButton = document.getElementById('cityButton');
+    const cityDropdown = document.getElementById('cityDropdown');
+    const citySearch = document.getElementById('citySearch');
+    const cityList = document.getElementById('cityList');
+    
+    // Şehir listesini oluştur
+    function populateCityList(filter = '') {
+        cityList.innerHTML = '';
+        CITIES.filter(city => 
+            city.toLowerCase().includes(filter.toLowerCase())
+        ).forEach(city => {
+            const div = document.createElement('div');
+            div.className = 'city-item';
+            div.textContent = city;
+            div.onclick = () => selectCity(city);
+            cityList.appendChild(div);
+        });
+    }
+    
+    // Şehir seçme fonksiyonu
+    function selectCity(city) {
+        document.getElementById('selectedCity').textContent = city;
+        cityDropdown.style.display = 'none';
+        getWeather(city);
+    }
+    
+    // Dropdown'ı aç/kapa
+    cityButton.onclick = () => {
+        const isVisible = cityDropdown.style.display === 'block';
+        cityDropdown.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible) {
+            citySearch.focus();
+            populateCityList();
+        }
+    };
+    
+    // Şehir arama
+    citySearch.oninput = (e) => {
+        populateCityList(e.target.value);
+    };
+    
+    // Dışarı tıklandığında dropdown'ı kapat
+    document.addEventListener('click', (e) => {
+        if (!cityButton.contains(e.target) && !cityDropdown.contains(e.target)) {
+            cityDropdown.style.display = 'none';
+        }
+    });
+    
+    // Kaydedilmiş şehri veya varsayılan olarak İstanbul'u yükle
+    const savedCity = localStorage.getItem('selectedCity') || 'İstanbul';
+    selectCity(savedCity);
+    
+    // İlk yüklemede şehir listesini oluştur
+    populateCityList();
+});
+
+// Hava durumu bilgisini al
+async function getWeather(city) {
+    const API_KEY = '4d8fb5b93d4af21d66a2948710284366';
+    try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)},TR&appid=${API_KEY}&units=metric&lang=tr`);
+        const data = await response.json();
+        
+        if (data.cod === 200) {
+            updateWeatherUI(data);
+            localStorage.setItem('selectedCity', city);
+        } else {
+            console.error('Hava durumu bilgisi alınamadı:', data.message);
+            // Hata durumunda İstanbul'a geri dön
+            if (city !== 'İstanbul') {
+                getWeather('İstanbul');
+            }
+        }
+    } catch (error) {
+        console.error('Hava durumu bilgisi alınamadı:', error);
+        if (city !== 'İstanbul') {
+            getWeather('İstanbul');
+        }
+    }
+}
+
+// Hava durumu UI'ını güncelle
+function updateWeatherUI(data) {
+    const weatherInfo = document.getElementById('weatherInfo');
+    const selectedCity = document.getElementById('selectedCity');
+    const icon = weatherInfo.querySelector('.weather-icon');
+    const temperature = weatherInfo.querySelector('.temperature');
+    const description = weatherInfo.querySelector('.description');
+    
+    selectedCity.textContent = localStorage.getItem('selectedCity') || 'İstanbul';
+    icon.innerHTML = `<img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="weather">`;
+    temperature.textContent = `${Math.round(data.main.temp)}°C`;
+    description.textContent = data.weather[0].description.charAt(0).toUpperCase() + 
+                            data.weather[0].description.slice(1);
+    
+    weatherInfo.style.display = 'flex';
+} 
