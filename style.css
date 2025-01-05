@@ -974,4 +974,40 @@ h1::after {
     border-color: rgba(39, 245, 131, 0.4);
     transform: translateY(-3px);
     box-shadow: 0 8px 24px rgba(39, 245, 131, 0.15);
+}
+
+.price-up {
+    animation: priceUp 1s ease;
+    color: #27F583;
+}
+
+.price-down {
+    animation: priceDown 1s ease;
+    color: #F52727;
+}
+
+@keyframes priceUp {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+        color: #27F583;
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes priceDown {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+        color: #F52727;
+    }
+    100% {
+        transform: scale(1);
+    }
 } 
