@@ -1018,4 +1018,217 @@ document.addEventListener('DOMContentLoaded', function() {
     fetchCryptoAndCommodityData();
     // Her 30 saniyede bir verileri güncelle
     setInterval(fetchCryptoAndCommodityData, 30 * 1000);
-}); 
+});
+
+async function showAssetChart(asset) {
+    try {
+        // Grafik container'ını seç veya oluştur
+        let chartContainer = document.getElementById('assetChartContainer');
+        if (!chartContainer) {
+            chartContainer = document.createElement('div');
+            chartContainer.id = 'assetChartContainer';
+            chartContainer.style.position = 'fixed';
+            chartContainer.style.top = '50%';
+            chartContainer.style.left = '50%';
+            chartContainer.style.transform = 'translate(-50%, -50%)';
+            chartContainer.style.backgroundColor = '#1A0B2E';
+            chartContainer.style.padding = '20px';
+            chartContainer.style.borderRadius = '10px';
+            chartContainer.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+            chartContainer.style.zIndex = '1000';
+            chartContainer.style.width = '80%';
+            chartContainer.style.maxWidth = '800px';
+            
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '×';
+            closeButton.style.position = 'absolute';
+            closeButton.style.right = '10px';
+            closeButton.style.top = '10px';
+            closeButton.style.border = 'none';
+            closeButton.style.background = 'none';
+            closeButton.style.color = '#fff';
+            closeButton.style.fontSize = '24px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.onclick = () => chartContainer.remove();
+            
+            const canvas = document.createElement('canvas');
+            canvas.id = 'assetChart';
+            
+            chartContainer.appendChild(closeButton);
+            chartContainer.appendChild(canvas);
+            document.body.appendChild(chartContainer);
+        }
+
+        let prices = [];
+        let dates = [];
+
+        // Varlık tipine göre farklı API'lerden veri çek
+        switch(asset.type) {
+            case 'crypto':
+                const response = await fetch(`https://api.coingecko.com/api/v3/coins/${asset.id}/market_chart?vs_currency=usd&days=7&interval=daily`);
+                const data = await response.json();
+                prices = data.prices.map(price => ({
+                    x: new Date(price[0]),
+                    y: price[1]
+                }));
+                break;
+
+            case 'commodity':
+                // Investing.com API'si için
+                const commodityResponse = await fetch(`https://api.investing.com/api/financialdata/${asset.symbol}/historical/chart/?period=P1W&interval=PT1H`, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0',
+                        'domain-id': 'www.investing.com'
+                    }
+                });
+                const commodityData = await commodityResponse.json();
+                prices = commodityData.data.map(item => ({
+                    x: new Date(item.date),
+                    y: item.price
+                }));
+                break;
+
+            case 'bist':
+                // BIST verisi için
+                const bistResponse = await fetch(`https://api.investing.com/api/financialdata/BIST/${asset.symbol}/historical/chart/?period=P1W&interval=PT1H`, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0',
+                        'domain-id': 'www.investing.com'
+                    }
+                });
+                const bistData = await bistResponse.json();
+                prices = bistData.data.map(item => ({
+                    x: new Date(item.date),
+                    y: item.price
+                }));
+                break;
+        }
+
+        // Grafiği oluştur
+        const ctx = document.getElementById('assetChart').getContext('2d');
+        if (window.currentChart) {
+            window.currentChart.destroy();
+        }
+        
+        window.currentChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: `${asset.name} ${asset.type === 'crypto' ? '(USD)' : '(TRY)'}`,
+                    data: prices,
+                    borderColor: '#27F583',
+                    backgroundColor: 'rgba(39, 245, 131, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#27F583',
+                    pointBorderColor: '#1A0B2E',
+                    pointHoverBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            color: '#fff',
+                            font: {
+                                family: "'Poppins', sans-serif"
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(26, 11, 46, 0.95)',
+                        titleFont: {
+                            size: 12,
+                            weight: 'normal',
+                            family: "'Poppins', sans-serif"
+                        },
+                        bodyFont: {
+                            size: 14,
+                            weight: 'bold',
+                            family: "'Poppins', sans-serif"
+                        },
+                        padding: 15,
+                        cornerRadius: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.parsed.y.toFixed(4)} ${asset.type === 'crypto' ? 'USD' : 'TRY'}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'dd/MM'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(39, 245, 131, 0.05)',
+                            drawBorder: false
+                        },
+                        border: {
+                            display: false
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            font: {
+                                size: 12,
+                                family: "'Poppins', sans-serif"
+                            },
+                            maxRotation: 0,
+                            maxTicksLimit: 8,
+                            padding: 10
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(39, 245, 131, 0.05)',
+                            drawBorder: false
+                        },
+                        border: {
+                            display: false
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            font: {
+                                size: 12,
+                                family: "'Poppins', sans-serif"
+                            },
+                            padding: 10,
+                            maxTicksLimit: 6,
+                            callback: function(value) {
+                                return value.toLocaleString('tr-TR', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                }) + (asset.type === 'crypto' ? ' $' : ' ₺');
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Grafik yüklenirken hata oluştu:', error);
+        alert('Grafik yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+    }
+} 
