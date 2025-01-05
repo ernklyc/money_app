@@ -811,330 +811,211 @@ function updateWeatherUI(data) {
     weatherInfo.style.display = 'flex';
 }
 
-async function fetchCryptoData() {
+async function fetchCryptoAndCommodityData() {
     try {
-        const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+        // CoinGecko API'den kripto verileri
+        const cryptoIds = 'bitcoin,ethereum,binancecoin,ripple,dogecoin,cardano,polkadot,solana,avalanche-2,matic-network';
+        const cryptoResponse = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds}&vs_currencies=usd,try&include_24hr_change=true`);
         
-        if (!response.ok) {
-            throw new Error('Veri servisi yanıt vermiyor');
+        if (!cryptoResponse.ok) {
+            throw new Error('Kripto veri servisi yanıt vermiyor');
         }
         
-        const data = await response.json();
-        const cryptoCards = [];
-        
+        const cryptoData = await cryptoResponse.json();
+        const cards = [];
+
+        // Kripto para bilgileri
         const cryptoInfo = {
-            'BTCUSDT': { name: 'Bitcoin', symbol: 'BTC', id: 'bitcoin' },
-            'ETHUSDT': { name: 'Ethereum', symbol: 'ETH', id: 'ethereum' },
-            'BNBUSDT': { name: 'Binance Coin', symbol: 'BNB', id: 'binancecoin' },
-            'XRPUSDT': { name: 'Ripple', symbol: 'XRP', id: 'ripple' },
-            'DOGEUSDT': { name: 'Dogecoin', symbol: 'DOGE', id: 'dogecoin' },
-            'ADAUSDT': { name: 'Cardano', symbol: 'ADA', id: 'cardano' },
-            'DOTUSDT': { name: 'Polkadot', symbol: 'DOT', id: 'polkadot' },
-            'LINKUSDT': { name: 'Chainlink', symbol: 'LINK', id: 'chainlink' },
-            'LTCUSDT': { name: 'Litecoin', symbol: 'LTC', id: 'litecoin' },
-            'XLMUSDT': { name: 'Stellar', symbol: 'XLM', id: 'stellar' },
-            'TRXUSDT': { name: 'TRON', symbol: 'TRX', id: 'tron' },
-            'SOLUSDT': { name: 'Solana', symbol: 'SOL', id: 'solana' },
-            'AVAXUSDT': { name: 'Avalanche', symbol: 'AVAX', id: 'avalanche-2' },
-            'ATOMUSDT': { name: 'Cosmos', symbol: 'ATOM', id: 'cosmos' },
-            'ALGOUSDT': { name: 'Algorand', symbol: 'ALGO', id: 'algorand' },
-            'VETUSDT': { name: 'VeChain', symbol: 'VET', id: 'vechain' },
-            'XTZUSDT': { name: 'Tezos', symbol: 'XTZ', id: 'tezos' },
-            'EOSUSDT': { name: 'EOS', symbol: 'EOS', id: 'eos' },
-            'XMRUSDT': { name: 'Monero', symbol: 'XMR', id: 'monero' },
-            'AAVEUSDT': { name: 'Aave', symbol: 'AAVE', id: 'aave' }
+            'bitcoin': { name: 'Bitcoin', symbol: 'BTC', logo: 'btc' },
+            'ethereum': { name: 'Ethereum', symbol: 'ETH', logo: 'eth' },
+            'binancecoin': { name: 'Binance Coin', symbol: 'BNB', logo: 'bnb' },
+            'ripple': { name: 'Ripple', symbol: 'XRP', logo: 'xrp' },
+            'dogecoin': { name: 'Dogecoin', symbol: 'DOGE', logo: 'doge' },
+            'cardano': { name: 'Cardano', symbol: 'ADA', logo: 'ada' },
+            'polkadot': { name: 'Polkadot', symbol: 'DOT', logo: 'dot' },
+            'solana': { name: 'Solana', symbol: 'SOL', logo: 'sol' },
+            'avalanche-2': { name: 'Avalanche', symbol: 'AVAX', logo: 'avax' },
+            'matic-network': { name: 'Polygon', symbol: 'MATIC', logo: 'matic' }
         };
 
-        // USDT/TRY kurunu al
-        const usdtTryResponse = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY');
-        const usdtTryData = await usdtTryResponse.json();
-        const usdtTryRate = parseFloat(usdtTryData.price);
-        
-        data.forEach(ticker => {
-            if (cryptoInfo[ticker.symbol]) {
-                const info = cryptoInfo[ticker.symbol];
-                const priceUSD = parseFloat(ticker.lastPrice);
-                const priceTRY = priceUSD * usdtTryRate;
-                const change24h = parseFloat(ticker.priceChangePercent);
-                
-                cryptoCards.push({
-                    id: info.id,
-                    name: info.name,
-                    symbol: info.symbol,
-                    price_try: priceTRY,
-                    price_usd: priceUSD,
-                    change_24h: change24h
+        // Kripto paraları işle
+        Object.entries(cryptoData).forEach(([id, data]) => {
+            if (cryptoInfo[id]) {
+                cards.push({
+                    id: id,
+                    name: cryptoInfo[id].name,
+                    symbol: cryptoInfo[id].symbol,
+                    logo: cryptoInfo[id].logo,
+                    price_try: data.try,
+                    price_usd: data.usd,
+                    change_24h: data.try_24h_change,
+                    type: 'crypto'
                 });
             }
         });
-        
-        displayCrypto(cryptoCards);
-        
+
+        // Sabit emtia verileri (test için)
+        const commodities = [
+            {
+                id: 'gold',
+                name: 'Altın',
+                symbol: 'XAU',
+                logo: 'xau',
+                price_try: 2000,
+                price_usd: 65,
+                change_24h: 0.5,
+                type: 'commodity'
+            },
+            {
+                id: 'silver',
+                name: 'Gümüş',
+                symbol: 'XAG',
+                logo: 'xag',
+                price_try: 25,
+                price_usd: 0.8,
+                change_24h: 0.3,
+                type: 'commodity'
+            }
+        ];
+
+        cards.push(...commodities);
+
+        // Sabit BIST verileri (test için)
+        const bistStocks = [
+            { code: 'THYAO', name: 'Türk Hava Yolları', price: 100, change: 1.2 },
+            { code: 'GARAN', name: 'Garanti Bankası', price: 50, change: -0.8 },
+            { code: 'AKBNK', name: 'Akbank', price: 45, change: 0.5 },
+            { code: 'EREGL', name: 'Ereğli Demir Çelik', price: 75, change: 2.1 },
+            { code: 'ASELS', name: 'Aselsan', price: 60, change: -1.3 }
+        ];
+
+        bistStocks.forEach(stock => {
+            cards.push({
+                id: stock.code.toLowerCase(),
+                name: stock.name,
+                symbol: stock.code,
+                logo: 'bist',
+                price_try: stock.price,
+                price_usd: stock.price / 30, // Yaklaşık USD kuru
+                change_24h: stock.change,
+                type: 'bist'
+            });
+        });
+
+        displayAssets(cards);
+
     } catch (error) {
-        console.error('Kripto veriler çekilirken hata oluştu:', error);
-        const cryptoContainer = document.getElementById('cryptoContainer');
-        cryptoContainer.innerHTML = `
+        console.error('Veriler çekilirken hata oluştu:', error);
+        const container = document.getElementById('cryptoContainer');
+        container.innerHTML = `
             <div class="error-message">
-                <p>Kripto para verileri yüklenirken bir hata oluştu.</p>
-                <button onclick="retryCryptoFetch()" class="retry-button">Tekrar Dene</button>
+                <p>Veriler yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.</p>
+                <button onclick="retryFetch()" class="retry-button">Tekrar Dene</button>
             </div>
         `;
     }
 }
 
-function retryCryptoFetch() {
-    const cryptoContainer = document.getElementById('cryptoContainer');
-    cryptoContainer.innerHTML = '<div class="loading-message">Kripto veriler yükleniyor...</div>';
-    fetchCryptoData();
+function retryFetch() {
+    const container = document.getElementById('cryptoContainer');
+    container.innerHTML = '<div class="loading-message">Veriler yükleniyor...</div>';
+    fetchCryptoAndCommodityData();
 }
 
-async function fetchCryptoHistory(cryptoId, timeRange = '1D') {
-    try {
-        const symbol = Object.entries(cryptoInfo).find(([_, info]) => info.id === cryptoId)?.[0];
-        if (!symbol) throw new Error('Sembol bulunamadı');
-        
-        let interval;
-        let limit;
-        
-        switch(timeRange) {
-            case '1G':
-                interval = '5m';
-                limit = 288; // 24 saat * 12 (5 dakikalık dilimler)
-                break;
-            case '1H':
-                interval = '1h';
-                limit = 168; // 7 gün * 24
-                break;
-            case '1A':
-                interval = '1d';
-                limit = 30;
-                break;
-            case '1Y':
-                interval = '1w';
-                limit = 52;
-                break;
-            case '5Y':
-                interval = '1M';
-                limit = 60;
-                break;
-            default:
-                interval = '5m';
-                limit = 288;
-        }
-        
-        const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`);
-        
-        if (!response.ok) {
-            throw new Error('Veri alınamadı');
-        }
-        
-        const data = await response.json();
-        const usdtTryResponse = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY');
-        const usdtTryData = await usdtTryResponse.json();
-        const usdtTryRate = parseFloat(usdtTryData.price);
-        
-        return {
-            dates: data.map(d => new Date(d[0])),
-            values: data.map(d => parseFloat(d[4]) * usdtTryRate) // Kapanış fiyatını TL'ye çevir
-        };
-    } catch (error) {
-        console.error('Geçmiş veriler alınamadı:', error);
-        return { dates: [], values: [] };
-    }
-}
-
-function displayCrypto(cryptoData) {
-    const cryptoContainer = document.getElementById('cryptoContainer');
-    if (!cryptoContainer) return;
+function displayAssets(assets) {
+    const container = document.getElementById('cryptoContainer');
+    if (!container) return;
     
-    if (!cryptoData || cryptoData.length === 0) {
-        cryptoContainer.innerHTML = `
+    if (!assets || assets.length === 0) {
+        container.innerHTML = `
             <div class="error-message">
-                <p>Kripto para verileri bulunamadı.</p>
-                <button onclick="retryCryptoFetch()" class="retry-button">Tekrar Dene</button>
+                <p>Veriler bulunamadı.</p>
+                <button onclick="retryFetch()" class="retry-button">Tekrar Dene</button>
             </div>
         `;
         return;
     }
     
-    cryptoContainer.innerHTML = '';
-    
-    cryptoData.forEach(crypto => {
-        const cryptoCard = document.createElement('div');
-        cryptoCard.className = 'crypto-card';
-        cryptoCard.onclick = () => showCryptoChart(crypto.id, crypto.name);
-        
-        const changeClass = crypto.change_24h > 0 ? 'positive-change' : 'negative-change';
-        const changeSymbol = crypto.change_24h > 0 ? '▲' : '▼';
-        
-        cryptoCard.innerHTML = `
-            <div class="crypto-header">
-                <img src="https://cryptologos.cc/logos/${crypto.id}-${crypto.symbol.toLowerCase()}-logo.png" 
-                     alt="${crypto.name}"
-                     onerror="this.src='https://via.placeholder.com/32?text=${crypto.symbol}'">
-                <div class="crypto-title">
-                    <h3>${crypto.name}</h3>
-                    <span class="crypto-symbol">${crypto.symbol}</span>
-                </div>
-            </div>
-            <div class="crypto-prices">
-                <div class="price-try">${crypto.price_try.toLocaleString('tr-TR')} ₺</div>
-                <div class="price-usd">$${crypto.price_usd.toLocaleString('en-US')}</div>
-            </div>
-            <div class="crypto-change ${changeClass}">
-                ${changeSymbol} ${Math.abs(crypto.change_24h).toFixed(2)}%
-            </div>
-        `;
-        
-        cryptoContainer.appendChild(cryptoCard);
-    });
-}
+    container.innerHTML = `
+        <div class="asset-filters">
+            <button class="filter-btn active" data-type="all">Tümü</button>
+            <button class="filter-btn" data-type="crypto">Kripto</button>
+            <button class="filter-btn" data-type="commodity">Emtia</button>
+            <button class="filter-btn" data-type="bist">BIST</button>
+        </div>
+        <div class="assets-grid"></div>
+    `;
 
-async function showCryptoChart(cryptoId, cryptoName) {
-    currentCrypto = cryptoId;
-    const chartTitle = document.getElementById('chartTitle');
-    chartTitle.textContent = `${cryptoName} Grafiği`;
-    modal.style.display = "block";
+    const assetsGrid = container.querySelector('.assets-grid');
+    const filterButtons = container.querySelectorAll('.filter-btn');
     
-    const ctx = document.getElementById('rateChart').getContext('2d');
-    
-    if (chart) {
-        chart.destroy();
+    function filterAssets(type) {
+        const filteredAssets = type === 'all' ? assets : assets.filter(asset => asset.type === type);
+        displayFilteredAssets(filteredAssets);
     }
     
-    const activeTimeRange = document.querySelector('.time-btn.active').dataset.range;
-    const data = await fetchCryptoHistory(cryptoId, activeTimeRange);
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterAssets(btn.dataset.type);
+        });
+    });
     
-    chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: data.dates.map(date => date.toLocaleTimeString('tr-TR')),
-            datasets: [{
-                label: `${cryptoName}/TRY`,
-                data: data.values,
-                borderColor: '#27F583',
-                backgroundColor: 'rgba(39, 245, 131, 0.1)',
-                borderWidth: 2,
-                tension: 0.3,
-                fill: true,
-                pointRadius: 0,
-                pointHoverRadius: 6,
-                pointBackgroundColor: '#27F583',
-                pointBorderColor: '#1A0B2E',
-                pointHoverBorderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(26, 11, 46, 0.95)',
-                    titleFont: {
-                        size: 12,
-                        weight: 'normal',
-                        family: "'Poppins', sans-serif"
-                    },
-                    bodyFont: {
-                        size: 14,
-                        weight: 'bold',
-                        family: "'Poppins', sans-serif"
-                    },
-                    padding: 15,
-                    cornerRadius: 12,
-                    displayColors: false,
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.parsed.y.toFixed(2)} ₺`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    grid: {
-                        color: 'rgba(39, 245, 131, 0.05)',
-                        drawBorder: false
-                    },
-                    border: {
-                        display: false
-                    },
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.6)',
-                        font: {
-                            size: 12,
-                            family: "'Poppins', sans-serif"
-                        },
-                        padding: 10,
-                        maxTicksLimit: 6
-                    }
-                },
-                x: {
-                    grid: {
-                        color: 'rgba(39, 245, 131, 0.05)',
-                        drawBorder: false
-                    },
-                    border: {
-                        display: false
-                    },
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.6)',
-                        font: {
-                            size: 12,
-                            family: "'Poppins', sans-serif"
-                        },
-                        maxRotation: 0,
-                        maxTicksLimit: 8,
-                        padding: 10
-                    }
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            },
-            animation: {
-                duration: 1000,
-                easing: 'easeInOutQuart'
-            },
-            elements: {
-                line: {
-                    borderCapStyle: 'round',
-                    borderJoinStyle: 'round'
-                }
+    function displayFilteredAssets(filteredAssets) {
+        assetsGrid.innerHTML = '';
+        
+        filteredAssets.forEach(asset => {
+            const card = document.createElement('div');
+            card.className = 'crypto-card';
+            card.onclick = () => showAssetChart(asset);
+            
+            const changeClass = asset.change_24h > 0 ? 'positive-change' : 'negative-change';
+            const changeSymbol = asset.change_24h > 0 ? '▲' : '▼';
+            
+            let logoUrl;
+            switch(asset.type) {
+                case 'crypto':
+                    logoUrl = `https://cryptologos.cc/logos/${asset.id}-${asset.symbol.toLowerCase()}-logo.png`;
+                    break;
+                case 'commodity':
+                    logoUrl = `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${asset.symbol.toLowerCase()}.png`;
+                    break;
+                case 'bist':
+                    logoUrl = 'https://www.borsaistanbul.com/files/borsa-istanbul-logo.png';
+                    break;
             }
-        }
-    });
-}
-
-// Zaman aralığı butonları için olay dinleyicileri
-timeButtons.forEach(button => {
-    button.addEventListener('click', async () => {
-        timeButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        if (currentCrypto) {
-            const data = await fetchCryptoHistory(currentCrypto, button.dataset.range);
-            updateCryptoChart(data);
-        }
-    });
-});
-
-function updateCryptoChart(data) {
-    if (!chart) return;
+            
+            card.innerHTML = `
+                <div class="crypto-header">
+                    <img src="${logoUrl}" 
+                         alt="${asset.name}"
+                         onerror="this.src='https://via.placeholder.com/32?text=${asset.symbol}'">
+                    <div class="crypto-title">
+                        <h3>${asset.name}</h3>
+                        <span class="crypto-symbol">${asset.symbol}</span>
+                    </div>
+                </div>
+                <div class="crypto-prices">
+                    <div class="price-try">${asset.price_try.toLocaleString('tr-TR')} ₺</div>
+                    <div class="price-usd">$${asset.price_usd.toLocaleString('en-US')}</div>
+                </div>
+                <div class="crypto-change ${changeClass}">
+                    ${changeSymbol} ${Math.abs(asset.change_24h).toFixed(2)}%
+                </div>
+            `;
+            
+            assetsGrid.appendChild(card);
+        });
+    }
     
-    chart.data.labels = data.dates.map(date => date.toLocaleTimeString('tr-TR'));
-    chart.data.datasets[0].data = data.values;
-    chart.update();
+    // İlk yüklemede tüm varlıkları göster
+    displayFilteredAssets(assets);
 }
 
 // Sayfa yüklendiğinde verileri çek
 document.addEventListener('DOMContentLoaded', function() {
-    fetchCryptoData();
+    fetchCryptoAndCommodityData();
     // Her 30 saniyede bir verileri güncelle
-    setInterval(fetchCryptoData, 30 * 1000);
+    setInterval(fetchCryptoAndCommodityData, 30 * 1000);
 }); 
