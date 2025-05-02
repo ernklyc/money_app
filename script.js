@@ -774,6 +774,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('selectedCity').textContent = city;
         cityDropdown.style.display = 'none';
         getWeather(city);
+        // Şehir ismini localStorage'a kaydet
+        localStorage.setItem('selectedCity', city);
     }
     
     // Dropdown'ı aç/kapa
@@ -834,12 +836,11 @@ async function getWeather(city) {
 // Hava durumu UI'ını güncelle
 function updateWeatherUI(data) {
     const weatherInfo = document.getElementById('weatherInfo');
-    const selectedCity = document.getElementById('selectedCity');
     const icon = weatherInfo.querySelector('.weather-icon');
     const temperature = weatherInfo.querySelector('.temperature');
     const description = weatherInfo.querySelector('.description');
     
-    selectedCity.textContent = localStorage.getItem('selectedCity') || 'İstanbul';
+    // Artık selectedCity'yi burada güncellemiyoruz, bu selectCity fonksiyonunda yapılıyor
     icon.innerHTML = `<img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="weather">`;
     temperature.textContent = `${Math.round(data.main.temp)}°C`;
     description.textContent = data.weather[0].description.charAt(0).toUpperCase() + 
